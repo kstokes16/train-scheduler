@@ -14,12 +14,13 @@ var database = firebase.database();
 
 // event listener that takes user input from add train form
 $("#submit-train-info").on("click", function() {
-    console.log("Form submitted");
     // trim removes before and after space from input fields
     var trainName = $("#train-name-field").val().trim();
     var destination = $("#train-destination-field").val().trim();
     var frequency = $("#train-frequency-field").val().trim();
-    var firstTrainTime = moment($("#train-time-arrival-field").val().trim(),"HH:mm").subtract(10, "years").format("x");
+    var firstTrainTime = $("#train-time-arrival-field").val().trim();
+    
+    console.log("First Train: " + firstTrainTime);
    // console.log("You clicked the submit train info button");
 
     var newTrain = {
@@ -28,6 +29,8 @@ $("#submit-train-info").on("click", function() {
         frequency: frequency,
         firstTrainTime: firstTrainTime
     }
+
+$('.form-group').children('input').val('')
 
 database.ref().push(newTrain);
 
@@ -45,10 +48,36 @@ database.ref().on("child_added", function(snapshot){
     var firstTrainTime = snapshot.val().name;
 })
 
+// use MomentJS within here
+var firstTimeConverted = moment(firstTrainTime, "HH:mm").subtract(1, "years");
+console.log(firstTimeConverted);
+
+// Current Time
+var currentTime = moment();
+console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
+
+// Difference between the times
+var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+console.log("DIFFERENCE IN TIME: " + diffTime);
+
+// Time apart (remainder)
+var tRemainder = diffTime % frequency;
+console.log(tRemainder);
+
+// Minute Until Train
+var tMinutesTillTrain = frequency - tRemainder;
+console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
+
+// Next Train
+var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
+
+// end of MomentJS code to covert next arrival and minutes away
+
 // dynamically adds new train fields onto the form
 $(".table > tBody").append("<tr><td>" + trainName + "<td>" + destination + "<td>" + frequency + "<td>" + firstTrainTime);
 // end of rows being dynamically appended
 
-$('.form-group').children('input').val('')
+
 // return false;
 })})
